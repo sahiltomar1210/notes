@@ -1,13 +1,34 @@
 const router = require("express").Router();
 let User = require("../models/user");
 
-router.route("/").get((req, res) => {
-  User.find()
-    .then((users) => res.json(users))
-    .catch((error) => res.status(400).json(`Error: ${error}`));
+router.route("/").post(async (req, res) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    User.findOne({ email: email, password: password })
+      .then((notes) => {
+        if (!notes) {
+          res.status(404).json({
+            status: "Failed",
+            message: "User does not exists!!",
+          });
+        } else {
+          res.status(200).json({
+            status: "Success",
+            notes,
+          });
+        }
+      })
+      .catch((error) =>
+        res.status(400).json({
+          status: "Failed",
+          message: "Server Error",
+        }),
+      );
+  } catch (e) {}
 });
 
-router.route("/").post(async (req, res) => {
+router.route("/add").post(async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
@@ -36,7 +57,11 @@ router.route("/").post(async (req, res) => {
         username,
       });
       if (data) {
-        res.send(data);
+        res.status(200).json({
+          status: "Success",
+          message: "User Created!!",
+          data,
+        });
       }
     }
   } catch (e) {
